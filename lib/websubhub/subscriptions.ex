@@ -15,7 +15,21 @@ defmodule WebSubHub.Subscriptions do
          {:ok, callback_uri} <- validate_url(callback_url),
          {:ok, topic} <- find_or_create_topic(topic_url),
          {:ok, :success} <- validate_subscription(topic, callback_uri, lease_seconds) do
-      create_subscription(topic, callback_uri, lease_seconds, secret)
+      case Repo.get_by(Subscription, topic_id: topic.id, callback_url: callback_url) do
+        %Subscription{} = subscription ->
+          expires_at = NaiveDateTime.add(NaiveDateTime.utc_now(), lease_seconds, :second)
+
+          subscription
+          |> Subscription.changeset(%{
+            secret: secret,
+            expires_at: expires_at,
+            lease_seconds: lease_seconds
+          })
+          |> Repo.update()
+
+        nil ->
+          create_subscription(topic, callback_uri, lease_seconds, secret)
+      end
     else
       {:subscribe_validation_error, some_error} ->
         # If (and when) the subscription is denied, the hub MUST inform the subscriber by sending an HTTP [RFC7231] (or HTTPS [RFC2818]) GET request to the subscriber's callback URL as given in the subscription request. This request has the following query string arguments appended (format described in Section 4 of [URL]):
@@ -32,26 +46,20 @@ defmodule WebSubHub.Subscriptions do
   end
 
   def unsubscribe(topic_url, callback_url) do
-    case get_subscription_for_topic_and_callback(topic_url, callback_url) do
-      %Subscription{} = subscription ->
-        subscription
-        |> Subscription.changeset(%{
-          expires_at: NaiveDateTime.utc_now()
-        })
-        |> Repo.update()
+    with {:ok, _} <- validate_url(topic_url),
+         {:ok, callback_uri} <- validate_url(callback_url),
+         %Topic{} = topic <- get_topic_by_url(topic_url),
+         %Subscription{} = subscription <-
+           Repo.get_by(Subscription, topic_id: topic.id, callback_url: callback_url) do
+      validate_unsubscribe(topic, callback_uri)
 
-      _ ->
-        {:error, :subscription_not_found}
-    end
-  end
-
-  defp get_subscription_for_topic_and_callback(topic_url, callback_url) do
-    case get_topic_by_url(topic_url) do
-      %Topic{} = topic ->
-        Repo.get_by(Subscription, topic_id: topic.id, callback_url: callback_url)
-
-      err ->
-        err
+      subscription
+      |> Subscription.changeset(%{
+        expires_at: NaiveDateTime.utc_now()
+      })
+      |> Repo.update()
+    else
+      _ -> {:error, :subscription_not_found}
     end
   end
 
@@ -124,6 +132,33 @@ defmodule WebSubHub.Subscriptions do
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Got unexpected error from validate subscription call: #{reason}")
         {:subscribe_validation_error, :failed_unknown_error}
+    end
+  end
+
+  @doc """
+  Validate a unsubscription by sending a HTTP GET to the subscriber's callback_url.
+  """
+  def validate_unsubscribe(
+        %Topic{} = topic,
+        %URI{} = callback_uri
+      ) do
+    challenge = :crypto.strong_rand_bytes(32) |> Base.url_encode64() |> binary_part(0, 32)
+
+    params = %{
+      "hub.mode" => "unsubscribe",
+      "hub.topic" => topic.url,
+      "hub.challenge" => challenge
+    }
+
+    callback_url = append_our_params(callback_uri, params)
+
+    case HTTPoison.get(callback_url) do
+      {:ok, %HTTPoison.Response{}} ->
+        {:ok, :success}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error("Got unexpected error from validate unsubscribe call: #{reason}")
+        {:unsubscribe_validation_error, :failed_unknown_error}
     end
   end
 
