@@ -39,13 +39,18 @@ defmodule WebSubHub.HubTest do
     } do
       topic_url = publisher_url
       callback_url = subscriber_url
-      {:ok, _} = Subscriptions.subscribe(topic_url, callback_url)
+      {:ok, subscription} = Subscriptions.subscribe(topic_url, callback_url)
 
       {:ok, update} = Updates.publish(topic_url)
 
       assert_enqueued(
         worker: WebSubHub.Jobs.DispatchPlainUpdate,
-        args: %{update_id: update.id, callback_url: callback_url, secret: nil}
+        args: %{
+          update_id: update.id,
+          subscription_id: subscription.id,
+          callback_url: callback_url,
+          secret: nil
+        }
       )
 
       assert %{success: 1, failure: 0} = Oban.drain_queue(queue: :updates)
@@ -55,6 +60,37 @@ defmodule WebSubHub.HubTest do
       {:ok, [_challenge, publish]} = FakeServer.Instance.access_list(subscriber_pid)
 
       assert publish.body == @html_body
+    end
+
+    test "does not get publish if already unsubscribed", %{
+      subscriber_pid: subscriber_pid,
+      subscriber_url: subscriber_url,
+      publisher_pid: publisher_pid,
+      publisher_url: publisher_url
+    } do
+      topic_url = publisher_url
+      callback_url = subscriber_url
+      {:ok, subscription} = Subscriptions.subscribe(topic_url, callback_url)
+
+      {:ok, _} = Subscriptions.unsubscribe(topic_url, callback_url)
+
+      # Quick sleep
+      :timer.sleep(1000)
+
+      {:ok, update} = Updates.publish(topic_url)
+
+      refute_enqueued(
+        worker: WebSubHub.Jobs.DispatchPlainUpdate,
+        args: %{
+          update_id: update.id,
+          subscription_id: subscription.id,
+          callback_url: callback_url,
+          secret: nil
+        }
+      )
+
+      assert hits(publisher_pid) == 1
+      assert hits(subscriber_pid) == 1
     end
   end
 
@@ -73,13 +109,20 @@ defmodule WebSubHub.HubTest do
     } do
       topic_url = publisher_url
       callback_url = subscriber_url
-      {:ok, _} = Subscriptions.subscribe(topic_url, callback_url, 864_000, "some_secret")
+
+      {:ok, subscription} =
+        Subscriptions.subscribe(topic_url, callback_url, 864_000, "some_secret")
 
       {:ok, update} = Updates.publish(topic_url)
 
       assert_enqueued(
         worker: WebSubHub.Jobs.DispatchPlainUpdate,
-        args: %{update_id: update.id, callback_url: callback_url, secret: "some_secret"}
+        args: %{
+          update_id: update.id,
+          subscription_id: subscription.id,
+          callback_url: callback_url,
+          secret: "some_secret"
+        }
       )
 
       assert %{success: 1, failure: 0} = Oban.drain_queue(queue: :updates)
@@ -131,13 +174,18 @@ defmodule WebSubHub.HubTest do
     } do
       topic_url = publisher_url
       callback_url = subscriber_url
-      {:ok, _} = Subscriptions.subscribe(topic_url, callback_url)
+      {:ok, subscription} = Subscriptions.subscribe(topic_url, callback_url)
 
       {:ok, update} = Updates.publish(topic_url)
 
       assert_enqueued(
         worker: WebSubHub.Jobs.DispatchPlainUpdate,
-        args: %{update_id: update.id, callback_url: callback_url, secret: nil}
+        args: %{
+          update_id: update.id,
+          subscription_id: subscription.id,
+          callback_url: callback_url,
+          secret: nil
+        }
       )
 
       assert %{success: 1, failure: 0} = Oban.drain_queue(queue: :updates)
@@ -166,13 +214,18 @@ defmodule WebSubHub.HubTest do
     } do
       topic_url = publisher_url
       callback_url = subscriber_url
-      {:ok, _} = Subscriptions.subscribe(topic_url, callback_url)
+      {:ok, subscription} = Subscriptions.subscribe(topic_url, callback_url)
 
       {:ok, update} = Updates.publish(topic_url)
 
       assert_enqueued(
         worker: WebSubHub.Jobs.DispatchPlainUpdate,
-        args: %{update_id: update.id, callback_url: callback_url, secret: nil}
+        args: %{
+          update_id: update.id,
+          subscription_id: subscription.id,
+          callback_url: callback_url,
+          secret: nil
+        }
       )
 
       assert %{success: 1, failure: 0} = Oban.drain_queue(queue: :updates)

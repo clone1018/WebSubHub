@@ -32,7 +32,27 @@ defmodule WebSubHub.Subscriptions do
   end
 
   def unsubscribe(topic_url, callback_url) do
-    {:ok, :derp}
+    case get_subscription_for_topic_and_callback(topic_url, callback_url) do
+      %Subscription{} = subscription ->
+        subscription
+        |> Subscription.changeset(%{
+          expires_at: NaiveDateTime.utc_now()
+        })
+        |> Repo.update()
+
+      _ ->
+        {:error, :subscription_not_found}
+    end
+  end
+
+  defp get_subscription_for_topic_and_callback(topic_url, callback_url) do
+    case get_topic_by_url(topic_url) do
+      %Topic{} = topic ->
+        Repo.get_by(Subscription, topic_id: topic.id, callback_url: callback_url)
+
+      err ->
+        err
+    end
   end
 
   @doc """
@@ -61,6 +81,10 @@ defmodule WebSubHub.Subscriptions do
 
   def get_topic_by_url(topic_url) do
     Repo.get_by(Topic, url: topic_url)
+  end
+
+  def get_subscription_by_url(callback_url) do
+    Repo.get_by(Subscription, callback_url: callback_url)
   end
 
   @doc """
