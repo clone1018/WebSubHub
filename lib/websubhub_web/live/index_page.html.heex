@@ -1,0 +1,51 @@
+<div>
+    <header>
+        <h1>Stable & Free WebSub Hub</h1>
+        <p>Standards compliant open source WebSub Hub.</p>
+    </header>
+
+    <h2>Usage</h2>
+    <p>WebSubHub is a fully compliant WebSub Hub built that you can use to distribute live changes from various publishers. Usage of WebSubHub is very simple with only a single endpoint available at <code>https://websubhub.com/hub</code>.</p>
+    <p>Current implemented & supported version of WebSub is <a href="https://www.w3.org/TR/2018/REC-websub-20180123/">https://www.w3.org/TR/2018/REC-websub-20180123/</a>, however older versions may work.</p>
+    <p>Fully tested against <a href="https://websub.rocks/hub">websub.rocks hub test suite</a>.</p>
+
+    <h3>Subscribing</h3>
+    <p>You can subscribe to any public publishers using our hub. An example curl request is:</p>
+    <pre>
+$ curl \
+    -d "hub.mode=subscribe&hub.topic=<strong>$TOPIC_URL</strong>&hub.callback=<strong>$CALLBACK_URL</strong>" \
+    -X POST \
+    https://websubhub.com/hub
+</pre>
+    <p>Additionally, you <em>may</em> provide the following arguments:</p>
+    <dl>
+        <dt><code>hub.lease_seconds</code></dt>
+        <dd>Number of seconds for which the subscriber would like to have the subscription active, given as a positive decimal integer. Default value is 10 days.</dd>
+        <dt><code>hub.secret</code></dt>
+        <dd>A subscriber-provided cryptographically random unique secret string that will be used to compute a HMAC digest for the content distribution. This parameter MUST be less than 200 bytes in length.</dd>
+    </dl>
+    <p>Once you send the subscribe request, we'll send an <a href="https://www.w3.org/TR/2018/REC-websub-20180123/#x5-3-hub-verifies-intent-of-the-subscriber">appropriate GET request</a> to your <strong>$CALLBACK_URL</strong> to confirm the subscription.</p>
+
+    <h3>Unsubscribing</h3>
+    <p>You can unsubscribe from a publisher by issuing a similar request, however with the <code>hub.mode</code> as <code>unsubscribe</code>. An example curl request is:</p>
+    <pre>
+$ curl \
+    -d "hub.mode=unsubscribe&hub.topic=<strong>$TOPIC_URL</strong>&hub.callback=<strong>$CALLBACK_URL</strong>" \
+    -X POST \
+    https://websubhub.com/hub
+</pre>
+
+    <h3>Publishing</h3>
+    <p>Though not specified in the specification, publishing with WebSubHub can be accompished using <code>hub.mode</code> set to <code>publish</code> with <code>hub.topic</code> containing the topic URL.</p>
+    <p>We also support <code>hub.url</code> for backwards compatibility with other services.</p>
+    <pre>
+$ curl \
+    -d "hub.mode=publish&hub.topic=<strong>$TOPIC_URL</strong>" \
+    -X POST \
+    https://websubhub.com/hub
+</pre>
+
+    <h2>Support</h2>
+    <p>If you're having issues with the service, or you otherwise need help, please open up an <a href="https://github.com/clone1018/WebSubHub/issues">issue on GitHub</a>! It's worth mentioning that you should not share private information in the public issue tracker.</p>
+
+</div>
