@@ -17,6 +17,7 @@ defmodule WebSubHub.Subscriptions do
          {:ok, :success} <- validate_subscription(topic, callback_uri, lease_seconds) do
       case Repo.get_by(Subscription, topic_id: topic.id, callback_url: callback_url) do
         %Subscription{} = subscription ->
+          lease_seconds = convert_lease_seconds(lease_seconds)
           expires_at = NaiveDateTime.add(NaiveDateTime.utc_now(), lease_seconds, :second)
 
           subscription
