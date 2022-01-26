@@ -47,7 +47,9 @@ defmodule WebSubHubWeb.HubController do
   end
 
   defp handle_response({:error, message}, conn) when is_binary(message) do
-    text(conn, message)
+    conn
+    |> Plug.Conn.send_resp(500, message)
+    |> Plug.Conn.halt()
   end
 
   defp handle_response({:error, reason}, conn) when is_atom(reason) do

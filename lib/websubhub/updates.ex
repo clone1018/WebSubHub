@@ -40,11 +40,15 @@ defmodule WebSubHub.Updates do
             {:ok, update}
 
           _ ->
-            :error
+            {:error, "Publish URL did not return a successful status code."}
         end
 
-      error ->
-        error
+      nil ->
+        # Nothing found
+        {:error, "Topic not found for topic URL."}
+
+      _ ->
+        {:error, "Unknown error."}
     end
   end
 
