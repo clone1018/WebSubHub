@@ -90,7 +90,7 @@ defmodule WebSubHub.HubTest do
       )
 
       assert hits(publisher_pid) == 1
-      assert hits(subscriber_pid) == 1
+      assert hits(subscriber_pid) == 2
     end
   end
 

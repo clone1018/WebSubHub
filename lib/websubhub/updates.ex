@@ -37,6 +37,7 @@ defmodule WebSubHub.Updates do
               |> Oban.insert()
             end)
 
+            Logger.info("Updates.publish: Sending updates for #{topic_url}")
             {:ok, update}
 
           _ ->

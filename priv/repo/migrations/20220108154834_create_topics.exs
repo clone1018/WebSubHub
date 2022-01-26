@@ -25,8 +25,8 @@ defmodule WebSubHub.Repo.Migrations.CreateTopics do
 
       add :body, :binary
       add :headers, :binary
-      add :content_type, :string
-      add :links, {:array, :string}
+      add :content_type, :text
+      add :links, {:array, :text}
       add :hash, :string
 
       timestamps()

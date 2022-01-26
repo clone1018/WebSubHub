@@ -17,7 +17,14 @@ defmodule WebSubHubWeb.HubControllerTest do
     subscriber_pid: subscriber_pid,
     subscriber_url: subscriber_url
   } do
-    :ok = FakeServer.put_route(subscriber_pid, "/callback", FakeServer.Response.ok("foo"))
+    :ok =
+      FakeServer.put_route(subscriber_pid, "/callback", fn %{
+                                                             query: %{
+                                                               "hub.challenge" => challenge
+                                                             }
+                                                           } ->
+        FakeServer.Response.ok(challenge)
+      end)
 
     params = %{
       "hub.mode" => "subscribe",

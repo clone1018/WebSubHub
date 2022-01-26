@@ -17,5 +17,6 @@ defmodule WebSubHub.Subscriptions.Subscription do
     subscription
     |> cast(attrs, [:callback_url, :lease_seconds, :expires_at, :secret])
     |> validate_required([:callback_url, :lease_seconds, :expires_at])
+    |> unique_constraint([:topic_id, :callback_url])
   end
 end

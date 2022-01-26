@@ -20,6 +20,8 @@ defmodule WebSubHub.Subscriptions do
           lease_seconds = convert_lease_seconds(lease_seconds)
           expires_at = NaiveDateTime.add(NaiveDateTime.utc_now(), lease_seconds, :second)
 
+          Logger.info("Subscriptions.subscribe: Updating #{topic_url} for #{callback_url}")
+
           subscription
           |> Subscription.changeset(%{
             secret: secret,
@@ -39,6 +41,10 @@ defmodule WebSubHub.Subscriptions do
         reason = Atom.to_string(some_error)
         deny_subscription(callback_uri, topic_url, reason)
 
+        Logger.info(
+          "Subscriptions.subscribe: Failed validation for #{callback_url} with #{reason}"
+        )
+
         {:error, some_error}
 
       _ ->
@@ -53,6 +59,8 @@ defmodule WebSubHub.Subscriptions do
          %Subscription{} = subscription <-
            Repo.get_by(Subscription, topic_id: topic.id, callback_url: callback_url) do
       validate_unsubscribe(topic, callback_uri)
+
+      Logger.info("Subscriptions.unsubscribe: Updating #{topic_url} for #{callback_url}")
 
       subscription
       |> Subscription.changeset(%{
