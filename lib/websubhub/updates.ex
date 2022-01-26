@@ -40,14 +40,17 @@ defmodule WebSubHub.Updates do
             {:ok, update}
 
           _ ->
+            Logger.info("Updates.publish: Unsuccessful response code for #{topic.url}")
             {:error, "Publish URL did not return a successful status code."}
         end
 
       nil ->
         # Nothing found
+        Logger.info("Updates.publish: Did not find topic for #{topic_url}")
         {:error, "Topic not found for topic URL."}
 
-      _ ->
+      err ->
+        Logger.info("Updates.publish: Unknown error #{inspect(err)}")
         {:error, "Unknown error."}
     end
   end
