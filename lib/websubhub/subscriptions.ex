@@ -163,6 +163,7 @@ defmodule WebSubHub.Subscriptions do
   end
 
   def create_subscription(%Topic{} = topic, %URI{} = callback_uri, lease_seconds, secret) do
+    lease_seconds = convert_lease_seconds(lease_seconds)
     expires_at = NaiveDateTime.add(NaiveDateTime.utc_now(), lease_seconds, :second)
 
     %Subscription{
@@ -176,6 +177,12 @@ defmodule WebSubHub.Subscriptions do
     })
     |> Repo.insert()
   end
+
+  defp convert_lease_seconds(seconds) when is_binary(seconds) do
+    String.to_integer(seconds)
+  end
+
+  defp convert_lease_seconds(seconds), do: seconds
 
   def deny_subscription(%URI{} = callback_uri, topic_url, reason) do
     params = %{
