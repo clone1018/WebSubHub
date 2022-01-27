@@ -20,7 +20,7 @@ defmodule WebSubHub.MixProject do
   def application do
     [
       mod: {WebSubHub.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -52,7 +52,8 @@ defmodule WebSubHub.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 1.8"},
-      {:oban, "~> 2.10"}
+      {:oban, "~> 2.10"},
+      {:ecto_psql_extras, "~> 0.6"}
     ]
   end
 

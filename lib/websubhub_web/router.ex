@@ -18,6 +18,10 @@ defmodule WebSubHubWeb.Router do
     plug :accepts, ["x-www-form-urlencoded"]
   end
 
+  pipeline :admin do
+    plug :auth
+  end
+
   scope "/", WebSubHubWeb do
     pipe_through :browser
 
@@ -45,13 +49,16 @@ defmodule WebSubHubWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
+  import Phoenix.LiveDashboard.Router
 
-    scope "/" do
-      pipe_through :browser
-      live_dashboard "/dashboard", metrics: WebSubHubWeb.Telemetry
+  scope "/" do
+    if Mix.env() in [:dev, :test] do
+      pipe_through [:browser, :admin]
+    else
+      pipe_through [:browser]
     end
+
+    live_dashboard "/dashboard", metrics: WebSubHubWeb.Telemetry
   end
 
   # Enables the Swoosh mailbox preview in development.
@@ -64,5 +71,12 @@ defmodule WebSubHubWeb.Router do
 
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+  end
+
+  defp auth(conn, _) do
+    Plug.BasicAuth.basic_auth(conn,
+      username: "admin",
+      password: System.fetch_env!("ADMIN_PASSWORD")
+    )
   end
 end
