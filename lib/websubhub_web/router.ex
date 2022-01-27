@@ -52,11 +52,7 @@ defmodule WebSubHubWeb.Router do
   import Phoenix.LiveDashboard.Router
 
   scope "/" do
-    if Mix.env() in [:dev, :test] do
-      pipe_through [:browser, :admin]
-    else
-      pipe_through [:browser]
-    end
+    pipe_through [:browser, :admin]
 
     live_dashboard "/dashboard", metrics: WebSubHubWeb.Telemetry
   end
