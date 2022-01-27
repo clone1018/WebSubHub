@@ -7,10 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <%= csrf_meta_tag() %>
     <%= live_title_tag assigns[:page_title] || "WebSubHub" %>
-    <meta name="description" content="WebSubHub is a fully compliant WebSub Hub built that you can use to distribute live changes from various publishers.">
+    <meta name="description"
+        content="WebSubHub is a fully compliant WebSub Hub built that you can use to distribute live changes from various publishers.">
 
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css" )} />
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js" )}></script>
+
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"
+        integrity="sha512-TW5s0IT/IppJtu76UbysrBH9Hy/5X41OTAbQuffZFU6lQ1rdcLHzpU5BzVvr/YFykoiMYZVWlr/PX1mDcfM9Qg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <%= if Application.get_env(:websubhub, :environment) == :prod do %>
     <script defer data-domain="websubhub.com" src="https://plausible.io/js/plausible.js"></script>
@@ -28,6 +33,7 @@
             </a>
             <ul>
                 <li><a href="/">Home</a></li>
+                <li><a href="/status">Status</a></li>
             </ul>
         </nav>
     </header>
@@ -42,7 +48,8 @@
                 <article>
                     <p>
                         Design from <a href="https://gdcss.netlify.app/" rel="noopener">GD.CSS</a><br>
-                        Made by <a href="https://twitter.com/clone1018">@clone1018</a> and published by <a href="http://axxim.net/">Axxim</a>
+                        Made by <a href="https://twitter.com/clone1018">@clone1018</a> and published by <a
+                            href="http://axxim.net/">Axxim</a>
                     </p>
                 </article>
             </section>

@@ -15,22 +15,25 @@ defmodule WebSubHubWeb.Live.StatusPage do
         <li>Active Subscriptions: <%= @active_subscriptions %></li>
       </ul>
 
-      <p>Last 30 Minutes:</p>
-      <ul>
-        <li>Publishes: <%= @publishes %></li>
-        <li>Published to Subscribers: <%= @subscription_updates %></li>
-      </ul>
+      <p>Past 90 days:</p>
+      <canvas id="updates-chart" phx-hook="UpdatesChart"></canvas>
 
     </div>
     """
   end
 
   def mount(_params, _, socket) do
+    send(self(), :load_chart_data)
+
     {:ok,
      socket
      |> assign(:topics, Subscriptions.count_topics())
-     |> assign(:active_subscriptions, Subscriptions.count_active_subscriptions())
-     |> assign(:publishes, Updates.count_30min_updates())
-     |> assign(:subscription_updates, Updates.count_30min_subscription_updates())}
+     |> assign(:active_subscriptions, Subscriptions.count_active_subscriptions())}
+  end
+
+  def handle_info(:load_chart_data, socket) do
+    {:noreply,
+     socket
+     |> push_event("chart_data", Subscriptions.subscription_updates_chart())}
   end
 end

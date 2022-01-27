@@ -267,6 +267,27 @@ defmodule WebSubHub.Subscriptions do
     )
   end
 
+  def subscription_updates_chart do
+    case Repo.query("""
+         select date(pushed_at) as "date", count(*) as "count"
+         from subscription_updates
+         group by date(pushed_at)
+         order by date(pushed_at) desc
+         limit 90;
+         """) do
+      {:ok, %Postgrex.Result{rows: rows}} ->
+        flipped = Enum.reverse(rows)
+
+        %{
+          keys: Enum.map(flipped, fn [key, _] -> key end),
+          values: Enum.map(flipped, fn [_, value] -> value end)
+        }
+
+      _ ->
+        %{keys: [], values: []}
+    end
+  end
+
   # @doc """
   # Returns the list of topics.
 
