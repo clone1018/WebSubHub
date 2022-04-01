@@ -15,11 +15,17 @@ defmodule WebSubHub.Jobs.DispatchPlainUpdate do
       }) do
     Logger.info("Sending #{update_id} to #{callback_url}")
 
-    update = WebSubHub.Updates.get_update(update_id)
+    update = WebSubHub.Updates.get_update_and_topic(update_id)
+    topic_url = update.topic.url
+
+    links = [
+      "<#{topic_url}>; rel=self",
+      "<https://websubhub.com/hub>; rel=hub"
+    ]
 
     headers = %{
       "content-type" => update.content_type,
-      "link" => Enum.join(update.links, ", ")
+      "link" => Enum.join(links, ", ")
     }
 
     headers =

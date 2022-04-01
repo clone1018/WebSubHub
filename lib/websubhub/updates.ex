@@ -90,6 +90,10 @@ defmodule WebSubHub.Updates do
     Repo.get(Update, id)
   end
 
+  def get_update_and_topic(id) do
+    Repo.get(Update, id) |> Repo.preload(:topic)
+  end
+
   def get_subscription_update(id) do
     Repo.get(SubscriptionUpdate, id)
   end
