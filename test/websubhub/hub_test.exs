@@ -196,6 +196,9 @@ defmodule WebSubHub.HubTest do
 
       assert publish.body == @text_body
       assert publish.headers["content-type"] == "text/plain"
+
+      assert publish.headers["link"] ==
+               "<#{topic_url}>; rel=self, <https://websubhub.com/hub>; rel=hub"
     end
   end
 
@@ -236,6 +239,9 @@ defmodule WebSubHub.HubTest do
 
       assert publish.body == @json_body
       assert publish.headers["content-type"] == "application/json"
+
+      assert publish.headers["link"] ==
+               "<#{topic_url}>; rel=self, <https://websubhub.com/hub>; rel=hub"
     end
   end
 
@@ -254,7 +260,9 @@ defmodule WebSubHub.HubTest do
       FakeServer.put_route(pid, callback_path, fn _ ->
         FakeServer.Response.ok(
           @html_body,
-          %{"Content-Type" => "text/html; charset=UTF-8"}
+          %{
+            "Content-Type" => "text/html; charset=UTF-8"
+          }
         )
       end)
 

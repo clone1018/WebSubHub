@@ -15,7 +15,7 @@ defmodule WebSubHubWeb.Live.StatusPage do
         <li>Active Subscriptions: <%= @active_subscriptions %></li>
       </ul>
 
-      <p>Past 90 days:</p>
+      <p>Past 30 days:</p>
       <canvas id="updates-chart" phx-hook="UpdatesChart"></canvas>
 
     </div>
