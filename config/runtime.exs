@@ -33,7 +33,7 @@ if config_env() == :prod do
       """
 
   config :websubhub, WebSubHubWeb.Endpoint,
-    url: [host: "websubhub.com", port: 443],
+    url: [host: "websubhub.com", port: System.get_env("PORT", 4000)],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
@@ -42,15 +42,19 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: String.to_integer(System.get_env("PORT") || "4000")
     ],
-    https: [
-      port: 443,
-      cipher_suite: :strong,
-      otp_app: :websubhub,
-      keyfile: System.get_env("SSL_KEYFILE_PATH"),
-      certfile: System.get_env("SSL_CERTFILE_PATH"),
-      cacertfile: System.get_env("SSL_CACERTFILE_PATH")
-    ],
     secret_key_base: secret_key_base
+
+  if System.get_env("START_SSL") do
+    config :websubhub, WebSubHubWeb.Endpoint,
+      https: [
+        port: 443,
+        cipher_suite: :strong,
+        otp_app: :websubhub,
+        keyfile: System.get_env("SSL_KEYFILE_PATH"),
+        certfile: System.get_env("SSL_CERTFILE_PATH"),
+        cacertfile: System.get_env("SSL_CACERTFILE_PATH")
+      ]
+  end
 
   # ## Using releases
   #
