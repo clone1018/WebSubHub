@@ -42,6 +42,14 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: String.to_integer(System.get_env("PORT") || "4000")
     ],
+    https: [
+      port: 443,
+      cipher_suite: :strong,
+      otp_app: :websubhub,
+      keyfile: System.get_env("SSL_KEYFILE_PATH"),
+      certfile: System.get_env("SSL_CERTFILE_PATH"),
+      cacertfile: System.get_env("SSL_CACERTFILE_PATH")
+    ],
     secret_key_base: secret_key_base
 
   # ## Using releases
